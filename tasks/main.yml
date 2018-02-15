@@ -1,0 +1,21 @@
+---
+ - name: Delete {{ name }} daemonset
+   shell: "kubectl delete daemonset {{ name }} --namespace={{ ns }}"
+   ignore_errors: yes
+
+ - name: Wait for {{ name }} pods to be deleted
+   shell: "kubectl get pods --namespace={{ ns }}"
+   register: result
+   until: result.stdout.find(name) == -1
+   retries: "{{ retry.max }}"
+   delay: "{{ retry.delay }}"
+
+ - name: Wait for {{ name }} daemonset to be deleted
+   shell: "kubectl get daemonsets --namespace={{ ns }}"
+   register: result
+   until: result.stdout.find(name) == -1
+   retries: "{{ retry.max }}"
+   delay: "{{ retry.delay }}"
+
+ - name: Create {{ name }} daemonset
+   shell: "kubectl create -f {{ yamls }}/{{ name }}-daemonset.yml"
